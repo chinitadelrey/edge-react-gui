@@ -111,7 +111,7 @@ class FullWalletListRow extends Component<Props, State> {
 
     // need to crossreference tokensEnabled with nativeBalances
     let enabledNativeBalances = {}
-    const enabledTokens = walletData.enabledTokens
+    const enabledTokens = walletData.enabledTokens || []
 
     for (let prop in walletData.nativeBalances) {
       if ((prop !== currencyCode) && (enabledTokens.indexOf(prop) >= 0)) {

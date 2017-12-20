@@ -13,11 +13,14 @@ export const MANAGE_TOKENS_START = 'MANAGE_TOKENS_START'
 export const MANAGE_TOKENS_SUCCESS = 'MANAGE_TOKENS_SUCCESS'
 export const DELETE_CUSTOM_TOKEN_START = 'DELETE_CUSTOM_TOKEN_START'
 export const DELETE_CUSTOM_TOKEN_SUCCESS = 'DELETE_CUSTOM_TOKEN_SUCCESS'
+export const UPDATE_WALLET_ENABLED_TOKENS = 'UPDATE_WALLET_ENABLED_TOKENS'
 
 // import * as UI_SELECTORS from '../selectors.js'
 import * as CORE_SELECTORS from '../../Core/selectors.js'
 import * as SETTINGS_SELECTORS from '../Settings/selectors'
 import * as SETTINGS_API from '../../Core/Account/settings.js'
+
+import {Actions} from 'react-native-router-flux'
 import {
   updateSettings
 } from '../Settings/action'
@@ -101,10 +104,20 @@ export const setEnabledTokens = (walletId: string, enabledTokens: Array<string>,
   // now actually tell the wallet to enable the token(s) in the core and save to file
   WALLET_API.setEnabledTokens(wallet, enabledTokens, disabledTokens)
   .then(() => {
-    // let Redux know it was completed successfully
-    dispatch(setTokensSuccess())
-    // refresh the wallet in Redux
-    dispatch(refreshWallet(walletId))
+    wallet.getEnabledTokens()
+    .then((tokensEnabledOnWallet) => {
+      if (tokensEnabledOnWallet === enabledTokens) {
+        dispatch(refreshWallet(walletId))
+        dispatch(updateWalletEnabledTokens(walletId, enabledTokens))
+        dispatch(setTokensSuccess())
+      } else {
+        console.log('issue setting enabled tokens')
+      }
+    })
+    .catch((e) => {
+      console.log(e)
+    })
+
   })
   .catch((e) => console.log(e))
 }
@@ -117,15 +130,14 @@ export const getEnabledTokens = (walletId: string) => (dispatch: Dispatch, getSt
   // get list of enabled / disbaled tokens frome file (not core)
   WALLET_API.getEnabledTokensFromFile(wallet)
   .then((tokens) => {
-    // make copy of the wallet
-    let modifiedWallet = wallet
-    // reflect the new enabled tokens in that wallet copy
-    modifiedWallet.enabledTokens = tokens
     // do the actual enabling of the tokens
-    WALLET_API.enableTokens(modifiedWallet, tokens)
+    WALLET_API.enableTokens(wallet, tokens)
     .then(() => {
       // now reflect that change in Redux's version of the wallet
-      dispatch(upsertWallet(modifiedWallet))
+      wallet.getEnabledTokens()
+      .then((tokensEnabledOnWallet) => {
+        dispatch(updateWalletEnabledTokens(walletId, tokensEnabledOnWallet))
+      })
     })
   })
 }
@@ -137,7 +149,8 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   const coreWallets = CORE_SELECTORS.getWallets(state)
   const guiWallets = state.ui.wallets.byId
   const account = CORE_SELECTORS.getAccount(state)
-
+  let coreWalletsToUpdate = []
+  let newSettings = {}
   dispatch(deleteCustomTokenStart())
   SETTINGS_API.getSyncedSettings(account)
   .then((settings) => {
@@ -147,30 +160,37 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
     const indexOfToken = _.findIndex(customTokensOnFile, (item) => item.currencyCode = currencyCode)
     customTokensOnFile.splice(indexOfToken, 1)
     settings.customTokens = customTokensOnFile // use new variable?
-    SETTINGS_API.setSyncedSettings(account, settings)
-    .then(() => {
-      // now time to loop through wallets and disable (on wallet and in core)
-      for (let prop in guiWallets) {
-        let theGuiWallet = guiWallets[prop]
-        let theCoreWallet = coreWallets[prop]
-        if (theGuiWallet.enabledTokens && theGuiWallet.enabledTokens.length > 0) {
-          // if the wallet has tokens
-          const indexOfEnabledToken = theGuiWallet.enabledTokens.indexOf(currencyCode)
-          // find the index of the token
-          theGuiWallet.enabledTokens.splice(indexOfEnabledToken, 1)
-          // and remove it from the enabledTokens property
-          const indexOfMetaToken = _.findIndex(theGuiWallet.metaTokens, (item) => item.currencyCode === currencyCode)
-          theGuiWallet.metaTokens.splice(indexOfMetaToken, 1)
-          dispatch(setEnabledTokens(theGuiWallet.id, theGuiWallet.enabledTokens, [currencyCode]))
-        }
+    return settings
+  })
+  .then((settings) => {
+    newSettings = settings
+    return SETTINGS_API.setSyncedSettings(account, settings)
+  })
+  .then(() => {
+    // now time to loop through wallets and disable (on wallet and in core)
+    const walletPromises = Object.values(guiWallets).map((wallet) => {
+      let theCoreWallet = coreWallets[wallet.id]
+      if (wallet.enabledTokens && wallet.enabledTokens.length > 0) {
+        coreWalletsToUpdate.push(theCoreWallet)
+        return WALLET_API.updateEnabledTokens(theCoreWallet, [], [currencyCode])
       }
-      // wait until all wallets have been disabled before you remove denom from settings
-      dispatch(updateSettings(settings))
-      dispatch(deleteCustomTokenSuccess())
+      return Promise.resolve()
     })
-    .catch((e) => {
-      console.log(e)
+    return Promise.all(walletPromises)
+  })
+  .then(() => {
+    coreWalletsToUpdate.forEach((wallet) => {
+      dispatch(upsertWallet(wallet))
     })
+  })
+  .then(() => {
+    // wait until all wallets have been disabled before you remove denom from settings
+    dispatch(updateSettings(newSettings))
+    dispatch(deleteCustomTokenSuccess())
+    Actions.pop()
+  })
+  .catch((e) => {
+    console.log(e)
   })
 }
 
@@ -188,4 +208,9 @@ export const setTokensStart = () => ({
 
 export const setTokensSuccess = () => ({
   type: MANAGE_TOKENS_SUCCESS
+})
+
+export const updateWalletEnabledTokens = (walletId, tokens) =>  ({
+  type: UPDATE_WALLET_ENABLED_TOKENS,
+  data: {walletId, tokens}
 })

@@ -273,3 +273,7 @@ export const isReceivedTransaction = (abcTransaction: AbcTransaction): boolean =
   gte(abcTransaction.nativeAmount, '0')
 export const isSentTransaction = (abcTransaction: AbcTransaction): boolean =>
   !isReceivedTransaction(abcTransaction)
+
+export const noOp = ()  => {
+  return
+}

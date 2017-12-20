@@ -1,6 +1,7 @@
 // @flow
 
 import type {AbcMetadata, AbcCurrencyWallet, AbcSpendInfo, AbcTransaction, AbcParsedUri, AbcReceiveAddress} from 'airbitz-core-types'
+import _ from 'lodash'
 
 const ENABLED_TOKENS_FILENAME = 'EnabledTokens.json'
 
@@ -77,6 +78,7 @@ export const getEnabledTokensFromFile = (wallet: AbcCurrencyWallet): Promise<Arr
 
 export const getEnabledTokensFile = (wallet: AbcCurrencyWallet) => {
   const folder = wallet.folder
+  console.log('inside getEnabledTokensFile, wallet is: ', wallet)
   const file = folder.file(ENABLED_TOKENS_FILENAME)
   return file
 }
@@ -97,6 +99,23 @@ export async function setEnabledTokens (wallet: AbcCurrencyWallet, tokens: Array
   } catch (e) {
     console.log(e)
     return
+  }
+}
+
+export async function updateEnabledTokens (wallet: AbcCurrencyWallet, tokensToEnable: Array<string>, tokensToDisable: Array<string>) {
+  const tokensFile = getEnabledTokensFile(wallet)
+  try {
+    const tokensText = await tokensFile.getText()
+    const enabledTokens = JSON.parse(tokensText)
+    let tokensWithNewTokens = _.union(tokensToEnable, enabledTokens)
+    let finalTokensToEnable = _.difference(tokensWithNewTokens, tokensToDisable)
+    return Promise.all([
+      enableTokens(wallet, finalTokensToEnable),
+      disableTokens(wallet, tokensToDisable),
+      tokensFile.setText(JSON.stringify(finalTokensToEnable))
+    ])
+  } catch (e) {
+    console.log(e)
   }
 }
 
