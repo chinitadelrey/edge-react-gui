@@ -67,12 +67,11 @@ export const addToken = (walletId, tokenObj) => (dispatch, getState) => {
           // and add the new token to that array
           newEnabledTokens.push(newTokenObj.currencyCode)
           // now send that new array over to be enabled in the core and on the wallet
-          dispatch(UI_ACTIONS.updateWalletEnabledTokens(walletId, newEnabledTokens))
+          dispatch(UI_ACTIONS.setEnabledTokens(walletId, newEnabledTokens))
         }
         // update customTokens object in Redux store
         dispatch(setCustomTokens(settings.customTokens))
-        // now refresh the wallet to make sure token data is present on wallet object
-        dispatch(UI_ACTIONS.refreshWallet(walletId))
+
         // congrats, adding the custom token has been a success
         dispatch(addTokenSuccess())
         // now remove the ManageToknens scene and head to the walletList scene
