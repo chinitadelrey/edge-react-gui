@@ -10,7 +10,7 @@ import * as SETTINGS_ACTIONS from '../Settings/action.js'
 import {setCustomTokens} from '../../Settings/action.js'
 import * as SETTINGS_API from '../../../Core/Account/settings.js'
 import * as CORE_SELECTORS from '../../../Core/selectors.js'
-import * as UI_ACTIONS from '../../Wallets/action.js'
+import * as WALLET_ACTIONS from '../../Wallets/action.js'
 import * as UI_WALLET_SELECTORS from '../../selectors.js'
 
 // adding a token should only be done on the account level, while enabling will occur on the wallet level
@@ -32,7 +32,7 @@ export const addToken = (walletId, tokenObj) => (dispatch, getState) => {
   // tell the GUI to that we are attempting to add a new token
   dispatch(addTokenStart(walletId))
   // add the new custom token to the core so it can scan blockchain, etc
-  dispatch(UI_ACTIONS.addCustomToken(walletId, tokenObj))
+  dispatch(WALLET_ACTIONS.addCustomToken(walletId, tokenObj))
   // get the account synced settings so that we can also add the custom token info there
   SETTINGS_API.getSyncedSettings(account)
   .then((settings) => {
@@ -67,11 +67,11 @@ export const addToken = (walletId, tokenObj) => (dispatch, getState) => {
           // and add the new token to that array
           newEnabledTokens.push(newTokenObj.currencyCode)
           // now send that new array over to be enabled in the core and on the wallet
-          dispatch(UI_ACTIONS.setEnabledTokens(walletId, newEnabledTokens))
+          dispatch(WALLET_ACTIONS.setEnabledTokens(walletId, newEnabledTokens))
         }
         // update customTokens object in Redux store
         dispatch(setCustomTokens(settings.customTokens))
-
+        WALLET_ACTIONS.dispatchUpsertWallet()
         // congrats, adding the custom token has been a success
         dispatch(addTokenSuccess())
         // now remove the ManageToknens scene and head to the walletList scene
