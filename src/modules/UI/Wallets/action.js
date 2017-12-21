@@ -188,6 +188,8 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   .then(() => {
     coreWalletsToUpdate.forEach((wallet) => {
       dispatch(upsertWallet(wallet))
+      const newEnabledTokens = _.difference(localSettings.customTokens, [currencyCode])
+      dispatch(updateWalletEnabledTokens(wallet.id, newEnabledTokens))
     })
   })
   .then(() => {
