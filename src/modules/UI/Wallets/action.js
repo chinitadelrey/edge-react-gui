@@ -18,6 +18,7 @@ export const UPDATE_WALLET_ENABLED_TOKENS = 'UPDATE_WALLET_ENABLED_TOKENS'
 // import * as UI_SELECTORS from '../selectors.js'
 import * as CORE_SELECTORS from '../../Core/selectors.js'
 import * as SETTINGS_SELECTORS from '../Settings/selectors'
+import * as SETTINGS_ACTIONS from '../Settings/action'
 import * as SETTINGS_API from '../../Core/Account/settings.js'
 
 import {Actions} from 'react-native-router-flux'
@@ -149,17 +150,23 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   const coreWallets = CORE_SELECTORS.getWallets(state)
   const guiWallets = state.ui.wallets.byId
   const account = CORE_SELECTORS.getAccount(state)
+  const localSettings = SETTINGS_SELECTORS.getSettings(state)
   let coreWalletsToUpdate = []
   let newSettings = {}
   dispatch(deleteCustomTokenStart())
   SETTINGS_API.getSyncedSettings(account)
   .then((settings) => {
     delete settings[currencyCode] // remove top-level property. We should migrate away from it eventually anyway
+    delete localSettings[currencyCode]
     const customTokensOnFile = settings.customTokens // should use '|| []' as catch-all or no?
-    if (customTokensOnFile.length === 0) return
+    const customTokensOnLocal = localSettings.customTokens
+    if (customTokensOnFile.length === 0 && customTokensOnLocal.length === 0) return
     const indexOfToken = _.findIndex(customTokensOnFile, (item) => item.currencyCode = currencyCode)
+    const indexOfTokenOnLocal = _.findIndex(customTokensOnLocal, (item) => item.currencyCode = currencyCode)
     customTokensOnFile.splice(indexOfToken, 1)
+    customTokensOnLocal.splice(indexOfTokenOnLocal)
     settings.customTokens = customTokensOnFile // use new variable?
+    localSettings.customTokens = customTokensOnLocal
     return settings
   })
   .then((settings) => {
@@ -185,8 +192,7 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   })
   .then(() => {
     // wait until all wallets have been disabled before you remove denom from settings
-    dispatch(updateSettings(newSettings))
-    dispatch(deleteCustomTokenSuccess())
+    dispatch(updateSettings(localSettings))
     Actions.pop()
   })
   .catch((e) => {

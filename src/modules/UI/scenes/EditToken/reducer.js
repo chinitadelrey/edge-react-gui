@@ -1,6 +1,7 @@
 import * as ACTION from './action'
 import {combineReducers} from 'redux'
 import * as WALLET_ACTIONS from '../../Wallets/action'
+import * as SETTINGS_ACTIONS from '../../Settings/action'
 
 export const deleteTokenModalVisible = (state = false, action) => {
   switch (action.type) {
@@ -20,6 +21,8 @@ export const deleteCustomTokenProcessing = (state = false, action) => {
   case WALLET_ACTIONS.DELETE_CUSTOM_TOKEN_START :
     return true
   case WALLET_ACTIONS.DELETE_CUSTOM_TOKEN_SUCCESS :
+    return false
+  case SETTINGS_ACTIONS.DELETE_CUSTOM_TOKEN :
     return false
   default:
     return false
