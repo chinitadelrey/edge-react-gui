@@ -11,6 +11,16 @@ export const getSettings = (state: State) => {
   return settings
 }
 
+export const getDisplayDenominationFull = (state: State, currencyCode: string) => {
+  console.log('in getDisplayDenominationFull, currencyCode is: ', currencyCode, ' , and currencySettings are: ', state.ui.settings[currencyCode])
+  const settings = state.ui.settings
+  const currencySettings = settings[currencyCode]
+  const selectedDenominationKey = currencySettings.denomination
+  const denominations = currencySettings.denominations
+  const selectedDenomination = denominations.find((denomination) => denomination.multiplier === selectedDenominationKey)
+  return selectedDenomination
+}
+
 export const getLoginStatus = (state: State): boolean => {
   const settings = getSettings(state)
   const loginStatus: boolean = settings.loginStatus
@@ -38,7 +48,6 @@ export const getDenominations = (state: State, currencyCode: string) => {
 export const getDisplayDenominationKey = (state: State, currencyCode: string) => {
   const settings = getSettings(state)
   const currencySettings = settings[currencyCode]
-  console.log('inside getDisplayDenominationKey, state is: ', state, ' , currencyCode is: ', currencyCode, ', and currencySettings are: ', currencySettings)
   const selectedDenominationKey = currencySettings.denomination
   return selectedDenominationKey
 }
@@ -54,7 +63,6 @@ export const getDisplayDenominationFromSettings = (settings: any, currencyCode: 
 export const getDisplayDenomination = (state: State, currencyCode: string) => {
   const selectedDenominationKey = getDisplayDenominationKey(state, currencyCode)
   const denominations = getDenominations(state, currencyCode)
-  console.log('state is: ', state, ' , and currencyCode is: ', currencyCode, ', denominations is: ', denominations, ', selectedDenominationKey is: ', selectedDenominationKey)
   const selectedDenomination = denominations.find((denomination) => denomination.multiplier === selectedDenominationKey)
   return selectedDenomination
 }
