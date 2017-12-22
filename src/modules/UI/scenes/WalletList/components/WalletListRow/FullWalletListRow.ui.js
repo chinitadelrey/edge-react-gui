@@ -20,7 +20,7 @@ import {border as b,
   cutOffText,
   truncateDecimals,
   decimalOrZero,
-  mergeTokens
+  mergeTokensRemoveInvisible
 } from '../../../../../utils.js'
 import {
   selectWallet,
@@ -88,7 +88,7 @@ class FullWalletListRow extends Component<Props, State> {
     const walletId = this.props.data.item.id
     const walletTokens = this.props.data.item.metaTokens
     const customTokens = this.props.customTokens || []
-    const mergedTokens = mergeTokens(walletTokens, customTokens)
+    const mergedTokens = mergeTokensRemoveInvisible(walletTokens, customTokens)
     this.setState({
       mergedTokens
     })

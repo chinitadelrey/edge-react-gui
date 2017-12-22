@@ -128,10 +128,17 @@ export const getEnabledTokens = (walletId: string) => (dispatch: Dispatch, getSt
   const state = getState()
   // get the AbcWallet
   const wallet = CORE_SELECTORS.getWallet(state, walletId)
+  const customTokens = SETTINGS_SELECTORS.getSettings(state).customTokens
   // get list of enabled / disbaled tokens frome file (not core)
   WALLET_API.getEnabledTokensFromFile(wallet)
   .then((tokens) => {
-    // do the actual enabling of the tokens
+    // (re)-add the token objects onto the wallet's currencyInfo
+    customTokens.forEach((currencyInfo) => {
+      if (tokens.indexOf(currencyInfo.currencyCode) >= 0) {
+        WALLET_API.addCoreCustomToken(wallet, currencyInfo)
+      }
+    })
+  // do the actual enabling of the tokens
     WALLET_API.enableTokens(wallet, tokens)
     .then(() => {
       // now reflect that change in Redux's version of the wallet
@@ -152,25 +159,23 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   const account = CORE_SELECTORS.getAccount(state)
   const localSettings = SETTINGS_SELECTORS.getSettings(state)
   let coreWalletsToUpdate = []
-  let newSettings = {}
   dispatch(deleteCustomTokenStart())
   SETTINGS_API.getSyncedSettings(account)
   .then((settings) => {
-    delete settings[currencyCode] // remove top-level property. We should migrate away from it eventually anyway
-    delete localSettings[currencyCode]
+    settings[currencyCode].isVisible = false // remove top-level property. We should migrate away from it eventually anyway
+    localSettings[currencyCode].isVisible = false
     const customTokensOnFile = settings.customTokens // should use '|| []' as catch-all or no?
     const customTokensOnLocal = localSettings.customTokens
-    if (customTokensOnFile.length === 0 && customTokensOnLocal.length === 0) return
+    if (customTokensOnFile.length === 0 && customTokensOnLocal.length === 0) return // is this necessary?
     const indexOfToken = _.findIndex(customTokensOnFile, (item) => item.currencyCode = currencyCode)
     const indexOfTokenOnLocal = _.findIndex(customTokensOnLocal, (item) => item.currencyCode = currencyCode)
-    customTokensOnFile.splice(indexOfToken, 1)
-    customTokensOnLocal.splice(indexOfTokenOnLocal)
+    customTokensOnFile[indexOfToken].isVisible = false
+    customTokensOnLocal[indexOfTokenOnLocal].isVisible = false
     settings.customTokens = customTokensOnFile // use new variable?
     localSettings.customTokens = customTokensOnLocal
     return settings
   })
   .then((settings) => {
-    newSettings = settings
     return SETTINGS_API.setSyncedSettings(account, settings)
   })
   .then(() => {

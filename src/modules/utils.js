@@ -89,8 +89,30 @@ export const mergeTokens = (preferredAbcMetaTokens: Array<AbcMetaToken>, abcMeta
   for (let x of abcMetaTokens) { // loops through the account-level array
     let found = false // assumes it is not present in the currencyInfo from plugin
     for (let val of tokensEnabled) { // loops through currencyInfo array to see if already present
-      if ((x.currencyCode === val.currencyCode) && (x.currencyName === val.currencyName)) {
+      if (x.currencyCode === val.currencyCode) {
         found = true // if present, then set 'found' to true
+      }
+    }
+    if (!found) tokensEnabled.push(x) // if not already in the currencyInfo, then add to tokensEnabled array
+  }
+  return tokensEnabled
+}
+
+export const mergeTokensRemoveInvisible = (preferredAbcMetaTokens: Array<AbcMetaToken>, abcMetaTokens: Array<AbcMetaToken>) => {
+  let tokensEnabled = [] // initially set the array to currencyInfo (from plugin), since it takes priority
+  for (let preferredToken of preferredAbcMetaTokens) {
+    let isVisible = true
+    for (let customToken of abcMetaTokens) {
+      if ((preferredToken.currencyCode === customToken.currencyCode) && customToken.isVisible === false)
+        isVisible = false
+    }
+    if (isVisible) tokensEnabled.push(preferredToken)
+  }
+  for (let x of abcMetaTokens) { // loops through the account-level array
+    let found = false // assumes it is not present in the currencyInfo from plugin
+    for (let val of tokensEnabled) { // loops through currencyInfo array to see if already present
+      if (x.currencyCode === val.currencyCode) {
+        found = true // if present, then set 'add' to true
       }
     }
     if (!found) tokensEnabled.push(x) // if not already in the currencyInfo, then add to tokensEnabled array

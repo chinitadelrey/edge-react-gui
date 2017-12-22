@@ -23,7 +23,8 @@ export const addToken = (walletId, tokenObj) => (dispatch, getState) => {
     denominations: [{
       name: tokenObj.currencyCode,
       multiplier: tokenObj.multiplier
-    }]
+    }],
+    isVisible: true
   }
   // get the account so that we can save the customTokens in the settings
   const account = CORE_SELECTORS.getAccount(state)

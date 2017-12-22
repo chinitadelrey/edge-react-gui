@@ -15,7 +15,7 @@ export type StateProps = {
   accountMetaTokenInfo: Array<AbcMetaToken>
 }
 export type DispatchProps = {
-  getEnabledTokensList: (string) => void,
+  // getEnabledTokensList: (string) => void,
   setEnabledTokensList: (string, Array<string>, Array<string>) => void
 }
 export type OwnProps = {guiWallet: GuiWallet}
@@ -26,7 +26,7 @@ const mapStateToProps = (state: State, ownProps: OwnProps): StateProps => ({
   customTokensList: state.ui.settings.customTokens
 })
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-  getEnabledTokensList: (walletId: string) => dispatch(getEnabledTokens(walletId)),
+  // getEnabledTokensList: (walletId: string) => dispatch(getEnabledTokens(walletId)),
   setEnabledTokensList: (walletId: string, enabledTokens: Array<string>, oldEnabledTokensList: Array<string>) => dispatch(setEnabledTokens(walletId, enabledTokens, oldEnabledTokensList))
 })
 export default connect(mapStateToProps, mapDispatchToProps)(ManageTokens)

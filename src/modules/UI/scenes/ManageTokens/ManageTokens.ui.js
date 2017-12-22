@@ -21,7 +21,7 @@ export type Props = {
   accountMetaTokenInfo: Array<AbcMetaToken>
 }
 export type DispatchProps = {
-  getEnabledTokensList: (string) => void,
+  // getEnabledTokensList: (string) => void,
   setEnabledTokensList: (string, Array<string>, Array<string>) => void
 }
 export type State = {
@@ -63,8 +63,8 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
 
   render () {
     const { metaTokens } = this.props.guiWallet
-    let accountMetaTokenInfo = this.props.accountMetaTokenInfo || []
-    let combinedTokenInfo = UTILS.mergeTokens(metaTokens, accountMetaTokenInfo)
+    let accountMetaTokenInfo = this.props.customTokensList || []
+    let combinedTokenInfo = UTILS.mergeTokensRemoveInvisible(metaTokens, accountMetaTokenInfo)
 
     let sortedTokenInfo = combinedTokenInfo.sort((a, b) => {
       if (a.currencyCode < b.currencyCode) return -1

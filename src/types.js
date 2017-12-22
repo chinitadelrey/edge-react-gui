@@ -98,7 +98,8 @@ export type CustomTokenInfo = {
   contractAddress: string,
   decimalPlaces: string,
   multiplier: string,
-  decimalPlaces: string
+  decimalPlaces: string,
+  isVisible: boolean
 }
 
 export type CurrencyConverter = {
