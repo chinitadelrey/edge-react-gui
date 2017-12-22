@@ -195,6 +195,7 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   .then(() => {
     // wait until all wallets have been disabled before you remove denom from settings
     dispatch(updateSettings(localSettings))
+    dispatch(deleteCustomTokenSuccess())
     Actions.pop()
   })
   .catch((e) => {
