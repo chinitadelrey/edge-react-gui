@@ -113,9 +113,12 @@ class FullWalletListRow extends Component<Props, State> {
     let enabledNativeBalances = {}
     const enabledTokens = walletData.enabledTokens || []
 
-    for (let prop in walletData.nativeBalances) {
-      if ((prop !== currencyCode) && (enabledTokens.indexOf(prop) >= 0)) {
-        enabledNativeBalances[prop] = walletData.nativeBalances[prop]
+    for (let value of walletData.metaTokens) {
+      if ((value.currencyCode !== currencyCode) && (enabledTokens.indexOf(value.currencyCode) >= 0)) {
+        enabledNativeBalances[`${value.currencyCode}-${value.currencyName}`] = {
+          balance: walletData.nativeBalances[value.currencyCode],
+          currencyCode: value.currencyCode
+        }
       }
     }
 
@@ -174,12 +177,14 @@ class FullWalletListRow extends Component<Props, State> {
     let tokens = []
     for (let property in metaTokenBalances) {
       if (property !== this.props.data.item.currencyCode) {
+        const currencyCode = metaTokenBalances[property].currencyCode
+        const balance = metaTokenBalances[property].balance
         tokens.push(
           <WalletListTokenRow
             parentId={parentId}
-            currencyCode={property}
+            currencyCode={currencyCode}
             key={property}
-            balance={metaTokenBalances[property]}
+            balance={balance}
             />)
       }
     }
@@ -187,7 +192,7 @@ class FullWalletListRow extends Component<Props, State> {
   }
 }
 const mapStateToProps = (state, ownProps) => {
-  const displayDenomination = SETTINGS_SELECTORS.getDisplayDenomination(state, ownProps.data.item.currencyCode)
+  const displayDenomination = SETTINGS_SELECTORS.getDisplayDenominationFull(state, ownProps.data.item.currencyCode)
   const exchangeDenomination = SETTINGS_SELECTORS.getExchangeDenomination(state, ownProps.data.item.currencyCode)
   const wallets = state.ui.wallets.byId
   return {
