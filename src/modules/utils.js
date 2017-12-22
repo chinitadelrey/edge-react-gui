@@ -98,6 +98,31 @@ export const mergeTokens = (preferredAbcMetaTokens: Array<AbcMetaToken>, abcMeta
   return tokensEnabled
 }
 
+export const mergeTokensRemoveInvisible = (preferredAbcMetaTokens: Array<AbcMetaToken>, abcMetaTokens: Array<AbcMetaToken>) => {
+  let tokensEnabled = [] // initially set the array to currencyInfo (from plugin), since it takes priority
+  let invisibleTokens = []
+  for (let preferredToken of preferredAbcMetaTokens) {
+    let isVisible = true
+    for (let customToken of abcMetaTokens) {
+      if ((preferredToken.currencyCode === customToken.currencyCode) && customToken.isVisible === false) {
+        isVisible = false
+        invisibleTokens.push(customToken.currencyCode)
+      }
+    }
+    if (isVisible) tokensEnabled.push(preferredToken)
+  }
+  for (let x of abcMetaTokens) { // loops through the account-level array
+    let found = false // assumes it is not present in the currencyInfo from plugin
+    for (let val of tokensEnabled) { // loops through currencyInfo array to see if already present
+      if (x.currencyCode === val.currencyCode) {
+        found = true // if present, then set 'add' to true
+      }
+    }
+    if (!found && invisibleTokens.indexOf(x.currencyCode) === -1) tokensEnabled.push(x) // if not already in the currencyInfo, then add to tokensEnabled array
+  }
+  return tokensEnabled
+}
+
 export const getRandomColor = () => borderColors[Math.floor(Math.random() * borderColors.length)]
 
 // Used to reject non-numeric (expect '.') values in the FlipInput

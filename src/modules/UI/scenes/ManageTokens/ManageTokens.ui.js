@@ -37,22 +37,6 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
     }
   }
 
-  componentDidMount () {
-    const { metaTokens } = this.props.guiWallet
-    let accountMetaTokenInfo = this.props.accountMetaTokenInfo || []
-    let combinedTokenInfo = UTILS.mergeTokens(metaTokens, accountMetaTokenInfo)
-
-    let sortedTokenInfo = combinedTokenInfo.sort((a, b) => {
-      if (a.currencyCode < b.currencyCode) return -1
-      if (a === b) return 0
-      return 1
-    })
-
-    this.setState({
-      combinedCurrencyInfos: sortedTokenInfo
-    })
-  }
-
   toggleToken = (currencyCode: string) => {
     let newEnabledList = this.state.enabledList
     let index = newEnabledList.indexOf(currencyCode)
@@ -78,6 +62,16 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
   }
 
   render () {
+    const { metaTokens } = this.props.guiWallet
+    let accountMetaTokenInfo = this.props.settingsCustomTokens || []
+    let combinedTokenInfo = UTILS.mergeTokensRemoveInvisible(metaTokens, accountMetaTokenInfo)
+
+    let sortedTokenInfo = combinedTokenInfo.sort((a, b) => {
+      if (a.currencyCode < b.currencyCode) return -1
+      if (a === b) return 0
+      return 1
+    })
+
     return (
       <View style={[styles.manageTokens]}>
         <Gradient style={styles.gradient} />
@@ -90,7 +84,7 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
             <View style={[styles.metaTokenListWrap]}>
               <FlatList
                 keyExtractor={(item) => item.currencyCode}
-                data={this.state.combinedCurrencyInfos}
+                data={sortedTokenInfo}
                 renderItem={(metaToken) =>
                   <ManageTokenRow
                     goToEditTokenScene={this.goToEditTokenScene}

@@ -66,11 +66,10 @@ export default class EditToken extends Component<Props, State> {
           visibilityBoolean={this.props.deleteTokenModalVisible}
           featuredIcon={<DeleteIcon />}
           modalBottom={<DeleteTokenButtons
-            deleteButtonFunction={this.props.deleteToken}
-            cancelButtonFunction={this.props.hideDeleteTokenModal}
+            onPressDelete={this.deleteToken}
+            onPressCancel={this.props.hideDeleteTokenModal}
           />}
           onExitButtonFxn={this.props.hideDeleteTokenModal}
-          onDeleteButtonFxn={this.props.deleteCustomToken}
         />
         <ScrollView style={styles.container}>
           <View style={styles.instructionalArea}>
@@ -150,7 +149,7 @@ export default class EditToken extends Component<Props, State> {
   }
 
   deleteToken = () => {
-    this.props.deleteToken()
+    this.props.deleteCustomToken(this.props.walletId, this.props.currencyCode)
   }
 
   onChangeName = (input: string) => {

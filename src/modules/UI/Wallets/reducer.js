@@ -20,17 +20,38 @@ export const byId = (state: any = {}, action: any) => {
     return out
   }
 
-  case ACTION.UPSERT_WALLET:
+  case ACTION.UPDATE_WALLET_ENABLED_TOKENS : {
+    const {walletId, tokens} = action.data
     return {
       ...state,
-      [data.wallet.id]: schema(data.wallet)
+      [walletId]: {
+        ...state[walletId],
+        enabledTokens: tokens
+      }
     }
+  }
+
+  case ACTION.UPSERT_WALLET: {
+    let guiWallet = schema(data.wallet)
+    guiWallet.enabledTokens = state[data.wallet.id].enabledTokens
+    return {
+      ...state,
+      [data.wallet.id]: guiWallet
+    }
+  }
 
   default:
     return state
   }
 }
 
+export const walletEnabledTokens = (state: any = {}, action: any) => {
+  if (action.type === UPDATE_WALLETS) {
+    return action.data.activeWalletIds
+  }
+
+  return state
+}
 export const activeWalletIds = (state: any = [], action: any) => {
   if (action.type === UPDATE_WALLETS) {
     return action.data.activeWalletIds
@@ -107,7 +128,7 @@ function schema (wallet: any): GuiWallet {
   const symbolImageDarkMono: string = wallet.currencyInfo.symbolImageDarkMono
   const metaTokens: Array<AbcMetaToken> = wallet.currencyInfo.metaTokens
   const denominations: Array<AbcDenomination> = wallet.currencyInfo.denominations
-  const enabledTokens: Array<string> = wallet.enabledTokens || []
+  const enabledTokens: Array<string> = []
 
   const allDenominations: {
     [currencyCode: string]: { [denomination: string]: AbcDenomination }

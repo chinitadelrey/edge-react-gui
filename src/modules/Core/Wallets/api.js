@@ -100,6 +100,23 @@ export async function setEnabledTokens (wallet: AbcCurrencyWallet, tokens: Array
   }
 }
 
+export async function updateEnabledTokens (wallet: AbcCurrencyWallet, tokensToEnable: Array<string>, tokensToDisable: Array<string>) {
+  const tokensFile = getEnabledTokensFile(wallet)
+  try {
+    const tokensText = await tokensFile.getText()
+    const enabledTokens = JSON.parse(tokensText)
+    let tokensWithNewTokens = _.union(tokensToEnable, enabledTokens)
+    let finalTokensToEnable = _.difference(tokensWithNewTokens, tokensToDisable)
+    return Promise.all([
+      enableTokens(wallet, finalTokensToEnable),
+      disableTokens(wallet, tokensToDisable),
+      tokensFile.setText(JSON.stringify(finalTokensToEnable))
+    ])
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 export const parseURI = (wallet: AbcCurrencyWallet, uri: string): AbcParsedUri => {
   return wallet.parseUri(uri)
 }

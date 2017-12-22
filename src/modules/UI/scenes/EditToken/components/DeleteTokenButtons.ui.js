@@ -16,13 +16,13 @@ export default class EditToken extends Component {
       <View style={[styles.deleteModalButtonsArea]}>
         <SecondaryButton
           text={s.strings.string_cancel_cap}
-          onPressFunction={this.props.cancelButtonFunction}
+          onPressFunction={this.props.onPressCancel}
           buttonStyle={[styles.modalCancelButton, styles.button]}
         />
         <PrimaryButton
           text={s.strings.string_delete}
           style={[styles.modalDeleteButton, styles.button]}
-          onPressFunction={this.props.deleteButtonFunction}
+          onPressFunction={this.props.onPressDelete}
           processingElement={<ActivityIndicator />}
           processingFlag={this.props.deleteTokenProcessing}
         />

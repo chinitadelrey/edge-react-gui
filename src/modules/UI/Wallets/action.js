@@ -13,15 +13,22 @@ export const MANAGE_TOKENS_START = 'MANAGE_TOKENS_START'
 export const MANAGE_TOKENS_SUCCESS = 'MANAGE_TOKENS_SUCCESS'
 export const DELETE_CUSTOM_TOKEN_START = 'DELETE_CUSTOM_TOKEN_START'
 export const DELETE_CUSTOM_TOKEN_SUCCESS = 'DELETE_CUSTOM_TOKEN_SUCCESS'
+export const UPDATE_WALLET_ENABLED_TOKENS = 'UPDATE_WALLET_ENABLED_TOKENS'
 
 // import * as UI_SELECTORS from '../selectors.js'
 import * as CORE_SELECTORS from '../../Core/selectors.js'
 import * as SETTINGS_SELECTORS from '../Settings/selectors'
+import * as SETTINGS_API from '../../Core/Account/settings.js'
+import {Actions} from 'react-native-router-flux'
+import {
+  updateSettings
+} from '../Settings/action'
 
 import type {Dispatch, GetState} from '../../ReduxTypes'
 import type {AbcCurrencyWallet} from 'airbitz-core-types'
 
 import * as WALLET_API from '../../Core/Wallets/api.js'
+import _ from 'lodash'
 
 export const selectWallet = (walletId: string, currencyCode: string) => ({
   type: SELECT_WALLET,
@@ -126,7 +133,59 @@ export const getEnabledTokens = (walletId: string) => (dispatch: Dispatch, getSt
 }
 
 export const deleteCustomToken = (walletId: string, currencyCode: string) => (dispatch: any, getState: any) => {
-
+  const state = getState()
+  const coreWallets = CORE_SELECTORS.getWallets(state)
+  const guiWallets = state.ui.wallets.byId
+  const account = CORE_SELECTORS.getAccount(state)
+  const localSettings = SETTINGS_SELECTORS.getSettings(state)
+  let coreWalletsToUpdate = []
+  dispatch(deleteCustomTokenStart())
+  SETTINGS_API.getSyncedSettings(account)
+  .then((settings) => {
+    settings[currencyCode].isVisible = false // remove top-level property. We should migrate away from it eventually anyway
+    localSettings[currencyCode].isVisible = false
+    const customTokensOnFile = settings.customTokens // should use '|| []' as catch-all or no?
+    const customTokensOnLocal = localSettings.customTokens
+    if (customTokensOnFile.length === 0 && customTokensOnLocal.length === 0) return // quite if there is nothing to delete
+    const indexOfToken = _.findIndex(customTokensOnFile, (item) => item.currencyCode = currencyCode)
+    const indexOfTokenOnLocal = _.findIndex(customTokensOnLocal, (item) => item.currencyCode = currencyCode)
+    customTokensOnFile[indexOfToken].isVisible = false
+    customTokensOnLocal[indexOfTokenOnLocal].isVisible = false
+    settings.customTokens = customTokensOnFile
+    localSettings.customTokens = customTokensOnLocal
+    return settings
+  })
+  .then((settings) => {
+    return SETTINGS_API.setSyncedSettings(account, settings)
+  })
+  .then(() => {
+    // now time to loop through wallets and disable (on wallet and in core)
+    const walletPromises = Object.values(guiWallets).map((wallet) => {
+      let theCoreWallet = coreWallets[wallet.id]
+      if (wallet.enabledTokens && wallet.enabledTokens.length > 0) {
+        coreWalletsToUpdate.push(theCoreWallet)
+        return WALLET_API.updateEnabledTokens(theCoreWallet, [], [currencyCode])
+      }
+      return Promise.resolve()
+    })
+    return Promise.all(walletPromises)
+  })
+  .then(() => {
+    coreWalletsToUpdate.forEach((wallet) => {
+      dispatch(upsertWallet(wallet))
+      const newEnabledTokens = _.difference(localSettings.customTokens, [currencyCode])
+      dispatch(updateWalletEnabledTokens(wallet.id, newEnabledTokens))
+    })
+  })
+  .then(() => {
+    // wait until all wallets have been disabled before you remove denom from settings
+    dispatch(updateSettings(localSettings))
+    dispatch(deleteCustomTokenSuccess())
+    Actions.pop()
+  })
+  .catch((e) => {
+    console.log(e)
+  })
 }
 
 export const deleteCustomTokenStart = () => ({
@@ -143,4 +202,9 @@ export const setTokensStart = () => ({
 
 export const setTokensSuccess = () => ({
   type: MANAGE_TOKENS_SUCCESS
+})
+
+export const updateWalletEnabledTokens = (walletId, tokens) =>  ({
+  type: UPDATE_WALLET_ENABLED_TOKENS,
+  data: {walletId, tokens}
 })
