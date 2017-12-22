@@ -83,7 +83,7 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
           <View style={[styles.metaTokenListArea]}>
             <View style={[styles.metaTokenListWrap]}>
               <FlatList
-                keyExtractor={(item) => `${item.currencyCode}-${item.currencyName}`}
+                keyExtractor={(item) => item.currencyCode}
                 data={sortedTokenInfo}
                 renderItem={(metaToken) =>
                   <ManageTokenRow
