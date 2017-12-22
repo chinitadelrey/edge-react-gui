@@ -37,7 +37,7 @@ export const selectWallet = (walletId: string, currencyCode: string) => ({
   data: {walletId, currencyCode}
 })
 
-function dispatchUpsertWallet (dispatch, wallet, walletId) {
+export const dispatchUpsertWallet =(dispatch, wallet, walletId) => {
   dispatch(upsertWallet(wallet))
   refreshDetails[walletId].delayUpsert = false
   refreshDetails[walletId].lastUpsert = Date.now()

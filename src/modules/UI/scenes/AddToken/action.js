@@ -71,7 +71,8 @@ export const addToken = (walletId, tokenObj) => (dispatch, getState) => {
         }
         // update customTokens object in Redux store
         dispatch(setCustomTokens(settings.customTokens))
-        WALLET_ACTIONS.dispatchUpsertWallet()
+        const coreWallet = CORE_SELECTORS.getWallet(state, walletId)
+        WALLET_ACTIONS.dispatchUpsertWallet(dispatch, coreWallet, walletId)
         // congrats, adding the custom token has been a success
         dispatch(addTokenSuccess())
         // now remove the ManageToknens scene and head to the walletList scene
