@@ -24,7 +24,7 @@ export default class EditToken extends Component {
           style={[styles.modalDeleteButton, styles.button]}
           onPressFunction={this.props.onPressDelete}
           processingElement={<ActivityIndicator />}
-          processingFlag={this.props.deleteTokenProcessing}
+          processingFlag={this.props.processingFlag}
         />
       </View>
     )

@@ -70,6 +70,9 @@ export const styles = {
     paddingLeft: 20,
     paddingRight: 20,
   },
+  rowLeftArea: {
+    flexDirection: 'row'
+  },
   manageTokenRowInterior: {
     flex: 1,
     flexDirection: 'row',
@@ -78,11 +81,10 @@ export const styles = {
   },
   touchableCheckboxInterior: {
     paddingHorizontal: 8,
-    height: '100%',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   tokenNameArea: {
-    marginLeft: 12,
     alignSelf: 'center'
   },
   tokenNameText: {
@@ -94,6 +96,10 @@ export const styles = {
   },
   underlay: {
     color: THEME.COLORS.PRIMARY_BUTTON_TOUCHED
+  },
+  rowRightArrow: {
+    fontSize: 18,
+    color: THEME.COLORS.GRAY_1
   },
   /////// end of token row styling /////////
 

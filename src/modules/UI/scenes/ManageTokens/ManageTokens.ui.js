@@ -92,6 +92,7 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
                     walletId={this.props.guiWallet.id}
                     toggleToken={this.toggleToken}
                     enabledList={this.state.enabledList}
+                    customTokensList={this.props.customTokensList}
                 />}
                 style={[styles.tokenList]}
               />

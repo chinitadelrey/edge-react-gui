@@ -68,6 +68,7 @@ export default class EditToken extends Component<Props, State> {
           modalBottom={<DeleteTokenButtons
             onPressDelete={this.deleteToken}
             onPressCancel={this.props.hideDeleteTokenModal}
+            processingFlag={this.props.deleteCustomTokenProcessing}
           />}
           onExitButtonFxn={this.props.hideDeleteTokenModal}
         />

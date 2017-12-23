@@ -23,7 +23,8 @@ export type OwnProps = {guiWallet: GuiWallet}
 const mapStateToProps = (state: State, ownProps: OwnProps): StateProps => ({
   manageTokensPending: state.ui.wallets.manageTokensPending,
   guiWallet: ownProps.guiWallet,
-  settingsCustomTokens: state.ui.settings.customTokens
+  settingsCustomTokens: state.ui.settings.customTokens,
+  customTokensList: state.ui.settings.customTokens
 })
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   getEnabledTokensList: (walletId: string) => dispatch(getEnabledTokens(walletId)),

@@ -8,6 +8,8 @@ export const deleteTokenModalVisible = (state = false, action) => {
     return true
   case ACTION.HIDE_DELETE_TOKEN_MODAL :
     return false
+  case WALLET_ACTIONS.DELETE_CUSTOM_TOKEN_SUCCESS :
+    return false
   default:
     return state
   }
@@ -20,7 +22,7 @@ export const deleteCustomTokenProcessing = (state = false, action) => {
   case WALLET_ACTIONS.DELETE_CUSTOM_TOKEN_SUCCESS :
     return false
   default:
-    return false
+    return state
   }
 }
 
