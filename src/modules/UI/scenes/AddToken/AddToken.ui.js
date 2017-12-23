@@ -40,10 +40,10 @@ class AddToken extends Component<Props, State> {
   constructor (props: Props) {
     super(props)
     this.state = {
-      currencyName: '',
-      currencyCode: '',
-      contractAddress: '',
-      decimalPlaces: '',
+      currencyName: 'Substratum',
+      currencyCode: 'SUB',
+      contractAddress: '0x12480e24eb5bec1a9d4369cab6a80cad3c0a377a',
+      decimalPlaces: '2',
       multiplier: '',
       errorMessage: ''
     }

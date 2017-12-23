@@ -1,5 +1,6 @@
 import * as ACTION from './action.js'
 import * as ADD_TOKEN_ACTION from '../scenes/AddToken/action.js'
+import * as WALLET_ACTION from '../Wallets/action'
 import {
   SYNCED_ACCOUNT_DEFAULTS,
   LOCAL_ACCOUNT_DEFAULTS,
@@ -34,6 +35,23 @@ export const settings = (state = initialState, action) => {
     return {
       ...state,
       customTokens
+    }
+  }
+
+  case WALLET_ACTION.DELETE_CUSTOM_TOKEN_SUCCESS: {
+    const {currencyCode} = data
+    const customTokenSettings = state.customTokens
+    const newCustomTokenSettings = customTokenSettings.map((item) => {
+      if (item.currencyCode === currencyCode) return {...item, isVisible: false}
+      return item
+    })
+    return {
+      ...state,
+      [currencyCode]: {
+        ...state[currencyCode],
+        isVisible: false
+      },
+      customTokens: newCustomTokenSettings
     }
   }
 
