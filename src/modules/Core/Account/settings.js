@@ -95,7 +95,10 @@ export const setDenominationKeyRequest = (account: AbcAccount, currencyCode: str
 // Helper Functions
 export const getSyncedSettings = (account: AbcAccount) =>
   getSyncedSettingsFile(account).getText()
-  .then(JSON.parse)
+  .then((text) => {
+    const settingsFromFile = JSON.parse(text)
+    return settingsFromFile
+  })
   .catch((e) => {
     console.log(e)
     // If Settings.json doesn't exist yet, create it, and return it

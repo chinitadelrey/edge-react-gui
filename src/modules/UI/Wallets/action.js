@@ -156,16 +156,16 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
     localSettings[currencyCode].isVisible = false
     const customTokensOnFile = [...settings.customTokens] // should use '|| []' as catch-all or no?
     const customTokensOnLocal = [...localSettings.customTokens]
-    const indexOfToken = _.findIndex(customTokensOnFile, (item) => item.currencyCode = currencyCode)
-    const indexOfTokenOnLocal = _.findIndex(customTokensOnLocal, (item) => item.currencyCode = currencyCode)
+    const indexOfToken = _.findIndex(customTokensOnFile, (item) => item.currencyCode === currencyCode)
+    const indexOfTokenOnLocal = _.findIndex(customTokensOnLocal, (item) => item.currencyCode === currencyCode)
     customTokensOnFile[indexOfToken].isVisible = false
     customTokensOnLocal[indexOfTokenOnLocal].isVisible = false
     settings.customTokens = customTokensOnFile
     localSettings.customTokens = customTokensOnLocal
     return settings
   })
-  .then((settings) => {
-    return SETTINGS_API.setSyncedSettings(account, settings)
+  .then((adjustedSettings) => {
+    return SETTINGS_API.setSyncedSettings(account, adjustedSettings)
   })
   .then(() => {
     // now time to loop through wallets and disable (on wallet and in core)
@@ -182,14 +182,14 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   .then(() => {
     coreWalletsToUpdate.forEach((wallet) => {
       dispatch(upsertWallet(wallet))
-      const newEnabledTokens = _.difference(localSettings.customTokens, [currencyCode])
+      const newEnabledTokens = _.difference(guiWallets[wallet.id].enabledTokens, [currencyCode])
       dispatch(updateWalletEnabledTokens(wallet.id, newEnabledTokens))
     })
   })
   .then(() => {
     dispatch(updateSettings(localSettings))
     dispatch(deleteCustomTokenSuccess(currencyCode)) // need to remove modal and update settings
-    Actions.walletList()
+    Actions.pop()
   })
   .catch((e) => {
     console.log(e)

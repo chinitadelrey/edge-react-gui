@@ -6,6 +6,7 @@ import {div, mul, gte, eq, toFixed} from 'biggystring'
 import getSymbolFromCurrency from 'currency-symbol-map'
 import type {AbcDenomination, AbcCurrencyInfo, AbcCurrencyPlugin, AbcTransaction, AbcMetaToken} from 'airbitz-core-types'
 import type {GuiDenomination, ExchangeData, GuiWallet} from '../types'
+import _ from 'lodash'
 
 const DIVIDE_PRECISION = 18
 
@@ -99,28 +100,14 @@ export const mergeTokens = (preferredAbcMetaTokens: Array<AbcMetaToken>, abcMeta
 }
 
 export const mergeTokensRemoveInvisible = (preferredAbcMetaTokens: Array<AbcMetaToken>, abcMetaTokens: Array<AbcMetaToken>) => {
-  let tokensEnabled = [] // initially set the array to currencyInfo (from plugin), since it takes priority
-  let invisibleTokens = []
-  for (let preferredToken of preferredAbcMetaTokens) {
-    let isVisible = true
-    for (let customToken of abcMetaTokens) {
-      if ((preferredToken.currencyCode === customToken.currencyCode) && customToken.isVisible === false) {
-        isVisible = false
-        invisibleTokens.push(customToken.currencyCode)
-      }
-    }
-    if (isVisible) tokensEnabled.push(preferredToken)
-  }
+  let tokensEnabled = [...preferredAbcMetaTokens] // initially set the array to currencyInfo (from plugin), since it takes priority
+  let tokensToAdd = []
   for (let x of abcMetaTokens) { // loops through the account-level array
-    let found = false // assumes it is not present in the currencyInfo from plugin
-    for (let val of tokensEnabled) { // loops through currencyInfo array to see if already present
-      if (x.currencyCode === val.currencyCode) {
-        found = true // if present, then set 'add' to true
-      }
+    if ((x.isVisible !== false) && (_.findIndex(tokensEnabled, (walletToken) => walletToken.currencyCode === x.currencyCode) === -1)) {
+      tokensToAdd.push(x)
     }
-    if (!found && invisibleTokens.indexOf(x.currencyCode) === -1) tokensEnabled.push(x) // if not already in the currencyInfo, then add to tokensEnabled array
   }
-  return tokensEnabled
+  return tokensEnabled.concat(tokensToAdd)
 }
 
 export const getRandomColor = () => borderColors[Math.floor(Math.random() * borderColors.length)]

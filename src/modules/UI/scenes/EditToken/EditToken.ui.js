@@ -37,7 +37,7 @@ type Props = {
   addTokenPending: Function,
   addToken: Function,
   currencyCode: string,
-  currencySettings: CustomTokenInfo,
+  customTokens: CustomTokenInfo,
   deleteTokenModalVisible: boolean
 }
 
@@ -45,8 +45,9 @@ export default class EditToken extends Component<Props, State> {
   constructor (props: Props) {
     super(props)
     // $FlowFixMe
-    const currencyInfo: CustomTokenInfo = _.find(props.currencySettings, (item) => item.currencyCode = props.currencyCode)
-    const { currencyName, contractAddress, decimalPlaces } = currencyInfo
+    const tokenInfo: CustomTokenInfo = _.find(props.customTokens, (item) => item.currencyCode === props.currencyCode)
+    console.log('in EditToken.ui.js, and currencyInfo is: ', tokenInfo)
+    const { currencyName, contractAddress, decimalPlaces } = tokenInfo
     this.state = {
       currencyName,
       contractAddress,

@@ -58,6 +58,8 @@ class ManageTokenRow extends Component<Props , State> {
         <View style={styles.rowLeftArea}>
           <TouchableWithoutFeedback
             onPress={() => this.props.toggleToken(item.currencyCode)}
+            isVisible={item.isVisible}
+            enabled={enabled}
           >
             <View style={[styles.touchableCheckboxInterior]}>
               <CheckBox style={{alignSelf: 'center'}} enabled={enabled} />

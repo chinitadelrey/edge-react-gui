@@ -16,6 +16,7 @@ import {PrimaryButton} from '../../components/Buttons'
 import {FormField} from '../../../../components/FormField.js'
 import * as ADD_TOKEN_ACTIONS from './action.js'
 import type {AbcMetaToken} from 'airbitz-core-types'
+import _ from 'lodash'
 
 export type DispatchProps = {
   addToken: (string, AbcMetaToken) => void

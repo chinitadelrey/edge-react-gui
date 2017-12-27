@@ -38,6 +38,7 @@ export const getDenominations = (state: State, currencyCode: string) => {
 export const getDisplayDenominationKey = (state: State, currencyCode: string) => {
   const settings = getSettings(state)
   const currencySettings = settings[currencyCode]
+  console.log('in getDisplayDenominationKey, currencyCode is: ', currencyCode)
   const selectedDenominationKey = currencySettings.denomination
   return selectedDenominationKey
 }

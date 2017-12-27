@@ -20,7 +20,7 @@ import {border as b,
   cutOffText,
   truncateDecimals,
   decimalOrZero,
-  mergeTokens
+  mergeTokensRemoveInvisible
 } from '../../../../../utils.js'
 import {
   selectWallet,
@@ -30,6 +30,7 @@ import * as SETTINGS_SELECTORS from '../../../../Settings/selectors'
 import platform from '../../../../../../theme/variables/platform.js'
 import type {GuiDenomination} from '../../../../../../types'
 import type {AbcMetaToken} from 'airbitz-core-types'
+import _ from 'lodash'
 const DIVIDE_PRECISION = 18
 
 export type FullWalletRowProps = {
@@ -88,7 +89,7 @@ class FullWalletListRow extends Component<Props, State> {
     const walletId = this.props.data.item.id
     const walletTokens = this.props.data.item.metaTokens
     const customTokens = this.props.customTokens || []
-    const mergedTokens = mergeTokens(walletTokens, customTokens)
+    const mergedTokens = mergeTokensRemoveInvisible(walletTokens, customTokens)
     this.setState({
       mergedTokens
     })
@@ -114,7 +115,8 @@ class FullWalletListRow extends Component<Props, State> {
     const enabledTokens = walletData.enabledTokens
 
     for (let prop in walletData.nativeBalances) {
-      if ((prop !== currencyCode) && (enabledTokens.indexOf(prop) >= 0)) {
+      if ((prop !== currencyCode)
+          && (enabledTokens.indexOf(prop) >= 0)) {
         enabledNativeBalances[prop] = walletData.nativeBalances[prop]
       }
     }
@@ -190,10 +192,12 @@ const mapStateToProps = (state, ownProps) => {
   const displayDenomination = SETTINGS_SELECTORS.getDisplayDenomination(state, ownProps.data.item.currencyCode)
   const exchangeDenomination = SETTINGS_SELECTORS.getExchangeDenomination(state, ownProps.data.item.currencyCode)
   const wallets = state.ui.wallets.byId
+  const customTokens = state.ui.settings.customTokens
   return {
     displayDenomination,
     exchangeDenomination,
-    wallets
+    wallets,
+    customTokens
   }
 }
 const mapDispatchToProps = (dispatch) => ({
