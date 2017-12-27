@@ -32,7 +32,7 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
   constructor (props: Props & DispatchProps) {
     super(props)
     this.state = {
-      enabledList: this.props.guiWallet.enabledTokens || [],
+      enabledList: [...this.props.guiWallet.enabledTokens],
       combinedCurrencyInfos: []
     }
   }
@@ -63,7 +63,7 @@ export default class ManageTokens extends Component<Props & DispatchProps, State
 
   render () {
     const { metaTokens } = this.props.guiWallet
-    let accountMetaTokenInfo = this.props.settingsCustomTokens || []
+    let accountMetaTokenInfo = [...this.props.settingsCustomTokens]
     let combinedTokenInfo = UTILS.mergeTokensRemoveInvisible(metaTokens, accountMetaTokenInfo)
 
     let sortedTokenInfo = combinedTokenInfo.sort((a, b) => {

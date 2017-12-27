@@ -85,11 +85,11 @@ export const inputBottomPadding = () => {
 
 // will take the metaTokens property on the wallet (that comes from currencyInfo), merge with account-level custom tokens added, and only return if enabled (wallet-specific)
 export const mergeTokens = (preferredAbcMetaTokens: Array<AbcMetaToken>, abcMetaTokens: Array<AbcMetaToken>) => {
-  let tokensEnabled = preferredAbcMetaTokens // initially set the array to currencyInfo (from plugin), since it takes priority
+  let tokensEnabled = [...preferredAbcMetaTokens] // initially set the array to currencyInfo (from plugin), since it takes priority
   for (let x of abcMetaTokens) { // loops through the account-level array
     let found = false // assumes it is not present in the currencyInfo from plugin
     for (let val of tokensEnabled) { // loops through currencyInfo array to see if already present
-      if ((x.currencyCode === val.currencyCode) && (x.currencyName === val.currencyName)) {
+      if ((x.currencyCode === val.currencyCode)) {
         found = true // if present, then set 'found' to true
       }
     }

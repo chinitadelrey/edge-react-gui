@@ -102,9 +102,10 @@ export const setEnabledTokens = (walletId: string, enabledTokens: Array<string>,
   const wallet = CORE_SELECTORS.getWallet(state, walletId)
   // now actually tell the wallet to enable the token(s) in the core and save to file
   WALLET_API.setEnabledTokens(wallet, enabledTokens, disabledTokens)
-  .then(() => {
+  .then((enabledTokens) => {
     // let Redux know it was completed successfully
     dispatch(setTokensSuccess())
+    dispatch(updateWalletEnabledTokens(walletId, enabledTokens))
     // refresh the wallet in Redux
     dispatch(refreshWallet(walletId))
   })
@@ -116,19 +117,26 @@ export const getEnabledTokens = (walletId: string) => (dispatch: Dispatch, getSt
   const state = getState()
   // get the AbcWallet
   const wallet = CORE_SELECTORS.getWallet(state, walletId)
-  // get list of enabled / disbaled tokens frome file (not core)
-  WALLET_API.getEnabledTokensFromFile(wallet)
+  // get token information from settings
+  const customTokens = SETTINGS_SELECTORS.getCustomTokens(state)
+  const customTokenPromises = customTokens.map((token) => {
+
+    return wallet.addCustomToken(token)
+  })
+  Promise.all(customTokenPromises)
+  .then(() => {
+    return WALLET_API.getEnabledTokensFromFile(wallet)
+  })
   .then((tokens) => {
-    // make copy of the wallet
-    let modifiedWallet = wallet
-    // reflect the new enabled tokens in that wallet copy
-    modifiedWallet.enabledTokens = tokens
-    // do the actual enabling of the tokens
-    WALLET_API.enableTokens(modifiedWallet, tokens)
-    .then(() => {
-      // now reflect that change in Redux's version of the wallet
-      dispatch(upsertWallet(modifiedWallet))
-    })
+    wallet.enableTokens(tokens)
+    return tokens
+  })
+  .then((tokens) => {
+    // now reflect that change in Redux's version of the wallet
+    dispatch(updateWalletEnabledTokens(walletId, tokens))
+  })
+  .catch((e) => {
+    console.log(e)
   })
 }
 
@@ -137,16 +145,17 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   const coreWallets = CORE_SELECTORS.getWallets(state)
   const guiWallets = state.ui.wallets.byId
   const account = CORE_SELECTORS.getAccount(state)
-  const localSettings = SETTINGS_SELECTORS.getSettings(state)
+  const localSettings = {
+    ...SETTINGS_SELECTORS.getSettings(state)
+  }
   let coreWalletsToUpdate = []
   dispatch(deleteCustomTokenStart())
   SETTINGS_API.getSyncedSettings(account)
   .then((settings) => {
     settings[currencyCode].isVisible = false // remove top-level property. We should migrate away from it eventually anyway
     localSettings[currencyCode].isVisible = false
-    const customTokensOnFile = settings.customTokens // should use '|| []' as catch-all or no?
-    const customTokensOnLocal = localSettings.customTokens
-    if (customTokensOnFile.length === 0 && customTokensOnLocal.length === 0) return // quite if there is nothing to delete
+    const customTokensOnFile = [...settings.customTokens] // should use '|| []' as catch-all or no?
+    const customTokensOnLocal = [...localSettings.customTokens]
     const indexOfToken = _.findIndex(customTokensOnFile, (item) => item.currencyCode = currencyCode)
     const indexOfTokenOnLocal = _.findIndex(customTokensOnLocal, (item) => item.currencyCode = currencyCode)
     customTokensOnFile[indexOfToken].isVisible = false
@@ -178,6 +187,7 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
     })
   })
   .then(() => {
+    dispatch(updateSettings(localSettings))
     dispatch(deleteCustomTokenSuccess(currencyCode)) // need to remove modal and update settings
     Actions.pop()
   })

@@ -82,7 +82,7 @@ export const getEnabledTokensFile = (wallet: AbcCurrencyWallet) => {
 }
 
 export async function setEnabledTokens (wallet: AbcCurrencyWallet, tokens: Array<string>, tokensToDisable?: Array<string>) {  // initialize array for eventual setting of file
-  let finalTextArray = tokens
+  let finalTextArray = [...tokens]
   // now stringify the new tokens
   let stringifiedTokens = JSON.stringify(finalTextArray)
   // grab the enabledTokensFile

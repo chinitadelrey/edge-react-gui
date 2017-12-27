@@ -63,6 +63,10 @@ export const getExchangeDenomination = (state: State, currencyCode: string) => {
   return exchangeDenomination
 }
 
+export const getCustomTokens = (state: State) => {
+  return state.ui.settings.customTokens
+}
+
 export const getPlugins = (state: State) => {
   const settings = getSettings(state)
   const plugins = settings.plugins

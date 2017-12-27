@@ -14,7 +14,15 @@ export const byId = (state: any = {}, action: any) => {
     const wallets = action.data.currencyWallets
     const out = {}
     for (const walletId of Object.keys(wallets)) {
-      out[walletId] = schema(wallets[walletId])
+      let tempWallet = schema(wallets[walletId])
+      if (state[walletId]) {
+        const enabledTokensOnWallet = state[walletId].enabledTokens
+        tempWallet.enabledTokens = enabledTokensOnWallet
+        enabledTokensOnWallet.forEach((customToken) => {
+          tempWallet.nativeBalances[customToken] = wallets[walletId].getBalance({currencyCode: customToken})
+        })
+      }
+      out[walletId] = tempWallet
     }
 
     return out
@@ -33,7 +41,11 @@ export const byId = (state: any = {}, action: any) => {
 
   case ACTION.UPSERT_WALLET: {
     let guiWallet = schema(data.wallet)
-    guiWallet.enabledTokens = state[data.wallet.id].enabledTokens
+    const enabledTokensOnWallet = state[data.wallet.id].enabledTokens
+    guiWallet.enabledTokens = enabledTokensOnWallet
+    enabledTokensOnWallet.forEach((customToken) => {
+      guiWallet.nativeBalances[customToken] = data.wallet.getBalance({currencyCode: customToken})
+    })
     return {
       ...state,
       [data.wallet.id]: guiWallet
@@ -128,7 +140,7 @@ function schema (wallet: any): GuiWallet {
   const symbolImageDarkMono: string = wallet.currencyInfo.symbolImageDarkMono
   const metaTokens: Array<AbcMetaToken> = wallet.currencyInfo.metaTokens
   const denominations: Array<AbcDenomination> = wallet.currencyInfo.denominations
-  const enabledTokens: Array<string> = []
+  const enabledTokens: Array<string> = wallet.enabledTokens || []
 
   const allDenominations: {
     [currencyCode: string]: { [denomination: string]: AbcDenomination }
