@@ -10,6 +10,7 @@ import styles, {styles as styleRaw} from '../style'
 import * as UTILS from '../../../../utils'
 import {bns} from 'biggystring'
 import type {GuiWallet} from '../../../../../types'
+import _ from 'lodash'
 
 const DIVIDE_PRECISION = 18
 
@@ -49,10 +50,14 @@ export default class WalletListModalBody extends Component<$FlowFixMeProps> {
   }
 
   renderTokenRowContent = (parentId: string, currencyCode: string, balance: any) => {
+    const denomination = this.props.walletList[parentId].allDenominations[currencyCode]
     let multiplier
-      = this.props.walletList[parentId]
-      .allDenominations[currencyCode][this.props.settings[currencyCode].denomination]
-      .multiplier
+    if (denomination) {
+      multiplier = denomination[this.props.settings[currencyCode].denomination].multiplier
+    } else {
+      const customDenom = _.find(this.props.settings.customTokens, (item) => item.currencyCode === currencyCode)
+      multiplier = customDenom.denominations[0].multiplier
+    }
     let cryptoAmount = bns.div(balance, multiplier, DIVIDE_PRECISION)
     const walletId = parentId
     return (
