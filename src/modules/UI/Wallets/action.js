@@ -189,7 +189,7 @@ export const deleteCustomToken = (walletId: string, currencyCode: string) => (di
   .then(() => {
     dispatch(updateSettings(localSettings))
     dispatch(deleteCustomTokenSuccess(currencyCode)) // need to remove modal and update settings
-    Actions.pop()
+    Actions.walletList()
   })
   .catch((e) => {
     console.log(e)

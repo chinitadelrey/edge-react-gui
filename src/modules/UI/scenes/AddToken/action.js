@@ -32,6 +32,8 @@ export const addToken = (walletId, tokenObj) => (dispatch, getState) => {
   const wallet = UI_WALLET_SELECTORS.getWallet(state, walletId)
   // tell the GUI to that we are attempting to add a new token
   dispatch(addTokenStart(walletId))
+  // set isVisible flag to true so it shows up
+  tokenObj.isVisible = true
   // add the new custom token to the core so it can scan blockchain, etc
   dispatch(UI_ACTIONS.addCustomToken(walletId, tokenObj))
   // get the account synced settings so that we can also add the custom token info there

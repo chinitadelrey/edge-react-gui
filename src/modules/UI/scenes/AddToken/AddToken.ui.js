@@ -5,7 +5,8 @@ import {connect} from 'react-redux'
 import {
   View,
   ActivityIndicator,
-  ScrollView
+  ScrollView,
+  Alert
 } from 'react-native'
 import Text from '../../components/FormattedText'
 import s from '../../../../locales/strings.js'
@@ -147,30 +148,35 @@ class AddToken extends Component<Props, State> {
 
   _onSave = () => {
     const {currencyName, currencyCode, decimalPlaces, contractAddress} = this.state
-    if (currencyName && currencyCode && decimalPlaces && contractAddress) {
-      const {walletId} = this.props
-      const numberOfDecimalPlaces: number = parseInt(this.state.decimalPlaces)
-      const multiplier: string = '1' + '0'.repeat(numberOfDecimalPlaces)
-      let tokenObj: any = this.state
-      tokenObj.multiplier = multiplier
-      tokenObj.denominations = [
-        {
-          name: currencyCode,
-          multiplier
-        }
-      ]
-      this.props.addToken(walletId, tokenObj)
+    if (_.findIndex(this.props.currentCustomTokens, (item) => item.currencyCode === currencyCode) >= 0) {
+      Alert.alert(s.strings.manage_tokens_duplicate_currency_code)
     } else {
-      this.setState({
-        errorMessage: s.strings.addtoken_default_error_message
-      })
+      if (currencyName && currencyCode && decimalPlaces && contractAddress) {
+        const {walletId} = this.props
+        const numberOfDecimalPlaces: number = parseInt(this.state.decimalPlaces)
+        const multiplier: string = '1' + '0'.repeat(numberOfDecimalPlaces)
+        let tokenObj: any = this.state
+        tokenObj.multiplier = multiplier
+        tokenObj.denominations = [
+          {
+            name: currencyCode,
+            multiplier
+          }
+        ]
+        this.props.addToken(walletId, tokenObj)
+      } else {
+        this.setState({
+          errorMessage: s.strings.addtoken_default_error_message
+        })
+      }
     }
   }
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
   addTokenPending: state.ui.wallets.addTokenPending,
-  walletId: ownProps.walletId
+  walletId: ownProps.walletId,
+  currentCustomTokens: state.ui.settings.customTokens
 })
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({

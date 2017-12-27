@@ -789,6 +789,7 @@ const strings = {
   fragmet_wallets_addtoken_option: 'Add Token',
   fragmet_wallets_managetokens_option: 'Manage Tokens',
   managetokens_top_instructions: 'Please select which tokens you would like displayed within the wallet:',
+  manage_tokens_duplicate_currency_code: 'A token with that currency code already exists.',
   addtoken_top_instructions: 'To add a token, please fill out the following form and press \'Save\'',
   addtoken_name_input_text: 'Token Name',
   addtoken_currency_code_input_text: 'Token Code',
